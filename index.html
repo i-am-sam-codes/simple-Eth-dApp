@@ -7,16 +7,77 @@
     <title>Document</title>
 </head>
 <body>
-    <h1>This is Sam's first dApp</h1>
+    <h1>Sam's moody dApp</h1>
     <p>Here we are going to set up some mood</p>
     <label for="mood">Input </label>
     <input type="text" id="mood" />
-
     <div>
         <button onclick="getMood()"> Get Mood </button>
     </div>
     <div>
-        <button onlick="setMood()"> Set Mood</button>
+        <button onlick="setMood()"> Set Mood </button>
     </div>
 </body>
+<script
+charset="utf-8"
+src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js"
+type="application/javascript"></script>
+<script>
+    window.ethereum.enable(); // detects wallet (metamask) that already exists on my browser window
+    var provider = new ethers.providers.Web3Provider( //provider is going to interact with the blockchain - packs up the wallet info
+    window.ethereum,
+        "ropsten"
+    );
+    
+    var MoodContractAddress = "0x5dc8ae3d6745C8C10851B2122946355073197605"; // deployed contract address
+    var MoodContractABI = [
+	{
+		"inputs": [],
+		"name": "getMood",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "_mood",
+				"type": "string"
+			}
+		],
+		"name": "setMood",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	}
+]; //ABI
+    var MoodContract;
+    var signer;
+
+    provider.listAccounts().then(function (accounts) { //gets accounts from metamask
+        signer = provider.getSigner(accounts[0]); //gets first account & convert to a signer 
+        MoodContract = new ethers.Contract( // creates contract instance
+            MoodContractAddress,
+            MoodContractABI,
+            signer
+        );
+    });
+    async function getMood() {
+        getMoodPromise = MoodContract.getMood();
+        var Mood = await getMoodPromise;
+        console.log(Mood);
+    }
+    async function setMood() {
+        let mood = document.getElementById("mood").value;
+        setMoodPromise = MoodContract.setMood(mood);
+        await setMoodPromise;
+    }
+</script>
 </html>
